@@ -1,0 +1,19 @@
+/* เพิ่ม contrast ให้ตัวหนังสือบนพื้นหลังมืดหรือสว่าง */
+.text-shadow {
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.hero-text-shadow {
+    color: #ffd700; /* สีทอง */
+    text-shadow: 
+        -1px -1px 0 #000,  
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.8);
+    font-weight: bold;
+}
+
+.bg-black-50 {
+    background-color: rgba(0, 0, 0, 0.3);
+}

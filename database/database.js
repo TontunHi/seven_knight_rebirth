@@ -75,6 +75,34 @@ function initTables() {
         skill_order TEXT,       -- JSON Array เก็บ Sequence การกดสกิล
         description TEXT
     )`);
+
+    // [Update] เพิ่ม Schema สำหรับ Codex System
+db.serialize(() => {
+    // 1. ตารางหัวข้อใหญ่ (Main Categories: Special, Common, Asgar...)
+    db.run(`CREATE TABLE IF NOT EXISTS codex_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        type TEXT DEFAULT 'hero' -- แยกประเภท hero หรือ pet
+    )`);
+
+    // 2. ตารางหัวข้อย่อย (Sub Categories: Seven Knights, Evan Expedition...)
+    db.run(`CREATE TABLE IF NOT EXISTS codex_groups (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER,
+        name TEXT,
+        FOREIGN KEY(category_id) REFERENCES codex_categories(id)
+    )`);
+
+    // 3. ตาราง Hero (เก็บชื่อ, รูป, และชื่อโฟลเดอร์สกิล)
+    db.run(`CREATE TABLE IF NOT EXISTS codex_heroes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER,
+        name TEXT,           -- ชื่อที่แสดงผล (Clean Name)
+        image_name TEXT,     -- ชื่อไฟล์รูปปก (l++_colt.png)
+        skill_folder TEXT,   -- ชื่อโฟลเดอร์สกิล (l+colt)
+        FOREIGN KEY(group_id) REFERENCES codex_groups(id)
+    )`);
+});
 }
 
 module.exports = db;

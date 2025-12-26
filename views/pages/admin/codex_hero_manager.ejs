@@ -1,0 +1,101 @@
+<%- include('../../partials/head') %>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white text-shadow">🛡️ Hero Codex Manager</h1>
+        <a href="/admin/dashboard" class="btn btn-outline-light">⬅ Back to Dashboard</a>
+    </div>
+
+    <div class="card bg-dark text-white mb-4 border-secondary">
+        <div class="card-body">
+            <h5 class="card-title">Add Main Category</h5>
+            <form action="/admin/codex/category/add" method="POST" class="d-flex gap-2">
+                <input type="text" name="name" class="form-control" placeholder="Ex: Special, Common Heroes..." required>
+                <button type="submit" class="btn btn-success">Add Category</button>
+            </form>
+        </div>
+    </div>
+
+    <% categories.forEach(cat => { %>
+        <div class="card mb-4 bg-dark border-light codex-category-card">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between">
+                <h3 class="m-0"><%= cat.name %></h3>
+                <form action="/admin/codex/group/add" method="POST" class="d-flex gap-2">
+                    <input type="hidden" name="category_id" value="<%= cat.id %>">
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="Add Sub-Group (Ex: Seven Knights)" required>
+                    <button type="submit" class="btn btn-sm btn-info">Add Group</button>
+                </form>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <% const myGroups = groups.filter(g => g.category_id === cat.id); %>
+                    
+                    <% myGroups.forEach(group => { %>
+                        <div class="col-md-12 mb-3">
+                            <div class="p-3 border rounded bg-black-50">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h4 class="text-warning text-shadow"><%= group.name %></h4>
+                                    <button class="btn btn-sm btn-primary" onclick="toggleForm('form-<%= group.id %>')">+ Add Hero</button>
+                                </div>
+
+                                <div id="form-<%= group.id %>" class="mb-3 p-2 bg-secondary rounded" style="display:none;">
+                                    <form action="/admin/codex/hero/add" method="POST">
+                                        <input type="hidden" name="group_id" value="<%= group.id %>">
+                                        <div class="row g-2">
+                                            <div class="col-md-5">
+                                                <label>Hero Image</label>
+                                                <select name="image_name" class="form-select">
+                                                    <% availableHeroImages.forEach(img => { %>
+                                                        <option value="<%= img %>"><%= img %></option>
+                                                    <% }) %>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label>Skill Folder Name</label>
+                                                <input type="text" name="skill_folder" class="form-control" placeholder="Ex: l+colt">
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-success w-100">Save</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="row">
+                                    <% const myHeroes = heroes.filter(h => h.group_id === group.id); %>
+                                    <% myHeroes.forEach(hero => { %>
+                                        <div class="col-md-3 col-sm-6 mb-2">
+                                            <div class="card bg-dark text-white h-100 border-secondary">
+                                                <div class="card-body text-center p-2">
+                                                    <img src="/images/heroes/<%= hero.image_name %>" class="img-fluid mb-2" style="max-height: 100px;">
+                                                    
+                                                    <h5 class="hero-text-shadow mb-2"><%= hero.name %></h5>
+                                                    
+                                                    <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                                        <small class="text-muted"><%= hero.skill_folder ? 'Skills Linked' : 'No Skills' %></small>
+                                                    </div>
+
+                                                    <a href="/admin/codex/hero/delete/<%= hero.id %>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('Delete?')">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+</div>
+
+<script>
+function toggleForm(id) {
+    const x = document.getElementById(id);
+    if (x.style.display === "none") { x.style.display = "block"; } else { x.style.display = "none"; }
+}
+</script>
+
+<%- include('../../partials/footer') %>

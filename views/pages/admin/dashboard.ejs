@@ -87,10 +87,15 @@
         .btn-outline-purple { border: 1px solid #d2ade6; color: #d2ade6; }
         .btn-outline-purple:hover { background: #d2ade6; color: #000; }
 
-        /* Dungeon Theme (New) */
+        /* Dungeon Theme */
         .btn-outline-red { border: 1px solid #ff6b6b; color: #ff6b6b; }
         .btn-outline-red:hover { background: #ff6b6b; color: #000; }
 
+        /* [NEW] Codex Theme (Cyan / Sky Blue) */
+        .btn-outline-cyan { border: 1px solid #0dcaf0; color: #0dcaf0; }
+        .btn-outline-cyan:hover { background: #0dcaf0; color: #000; box-shadow: 0 0 10px rgba(13, 202, 240, 0.4); }
+        .btn-outline-brown { border: 1px solid #947769; color: #947769; }
+        .btn-outline-brown:hover { background: #947769; color: #000; }
     </style>
 </head>
 <body class="text-light">
@@ -170,8 +175,19 @@
                 </div>
             </div>
 
-        </div>
-    </div>
+            <div class="col-md-4">
+                <div class="dash-card">
+                    <div class="card-body">
+                        <i class="bi bi-book-fill card-icon" style="-webkit-text-fill-color: #947769;"></i>
+                        <h4 class="card-title">Codex</h4>
+                        <p class="card-desc">Manage information</p>
+                        <a href="/admin/codex/hero" class="btn-action btn-outline-brown">
+                            <i class="bi bi-flag-fill me-2"></i>Hero Codex
+                        </a>
+                        </div>
+                     </div>
+                </div>
+            </div>
 
     <%- include('../../partials/footer') %>
 </body>

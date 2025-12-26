@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const adminCodexController = require('../controllers/adminCodexController');
 
 // Middleware: Body Parser
 router.use(express.urlencoded({ extended: true }));
@@ -50,5 +51,13 @@ router.post('/api/delete_dungeon_comp', requireAdmin, adminController.deleteDung
 router.get('/manage/comp/guild-war', requireAdmin, adminController.getGuildWarManager);
 router.post('/api/save_guildwar_comp', requireAdmin, adminController.saveGuildWarComp);
 router.post('/api/delete_guildwar_comp', requireAdmin, adminController.deleteGuildWarComp);
+
+//Codex Routes ---
+router.get('/codex/hero', adminCodexController.getIndex);
+// Action ต่างๆ (Add Category, Add Group, Add Hero, Delete)
+router.post('/codex/category/add', adminCodexController.addCategory);
+router.post('/codex/group/add', adminCodexController.addGroup);
+router.post('/codex/hero/add', adminCodexController.addHero);
+router.get('/codex/hero/delete/:id', adminCodexController.deleteHero);
 
 module.exports = router;

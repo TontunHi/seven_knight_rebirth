@@ -56,39 +56,65 @@ const getImageFiles = (folderPath) => {
 
     // Sort Logic (L > R > UN > C > Others)
     images.sort((a, b) => {
-        // ฟังก์ชันช่วยดึง Grade และ Name จากชื่อไฟล์ (เช่น l_ring.png)
         const getInfo = (filename) => {
             const parts = filename.split('_');
-            const grade = parts[0].toLowerCase(); // l, r, un, c
-            
-            // ตรวจสอบว่าเป็น Grade ที่เรารู้จักหรือไม่ ถ้าใช่ให้ Weight ถ้าไม่ใช่ให้ -1 (ไปอยู่ล่างสุด)
+            const grade = parts[0].toLowerCase();
             const weight = itemGradeWeight[grade] !== undefined ? itemGradeWeight[grade] : -1;
-            
-            // ชื่อที่เหลือตัดนามสกุลไฟล์ออก
             let name = parts.slice(1).join('_').replace(/\.[^/.]+$/, "").toLowerCase();
-            // กรณีชื่อไฟล์ไม่มี _ (เช่น ring.png) name จะว่าง ให้ใช้ชื่อไฟล์เดิม
             if (!name) name = filename.replace(/\.[^/.]+$/, "").toLowerCase();
-
             return { weight, name };
         };
 
         const infoA = getInfo(a);
         const infoB = getInfo(b);
 
-        // 1. เรียงตาม Grade Weight (มากไปน้อย)
         if (infoA.weight !== infoB.weight) {
             return infoB.weight - infoA.weight;
         }
-        
-        // 2. ถ้า Grade เท่ากัน เรียงตามชื่อ (a-z)
         return infoA.name.localeCompare(infoB.name);
     });
 
     return images;
 };
 
+// Helper: จัดรูปแบบชื่อ Hero (ตัด l++_ ออกและทำตัวพิมพ์ใหญ่)
+const formatHeroName = (filename) => {
+    if (!filename) return '';
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+    const parts = nameWithoutExt.split('_');
+    const cleanName = parts.length > 1 ? parts[parts.length - 1] : nameWithoutExt;
+    return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+};
+
+// Function 3: อ่านไฟล์ทั้งหมดในโฟลเดอร์ (ใช้สำหรับ Dropdown เลือกรูปใน Admin)
+const getFilesFromDir = (dirPath) => {
+    const fullPath = path.join(__dirname, '../public', dirPath);
+    if (!fs.existsSync(fullPath)) return [];
+    
+    return fs.readdirSync(fullPath).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
+};
+
+// [NEW] Function 4: อ่านรูป Skill จากโฟลเดอร์ย่อย (สำหรับ Codex)
+const getSkillImages = (heroSkillFolder) => {
+    if (!heroSkillFolder) return [];
+    
+    // Path: public/images/skill/{ชื่อโฟลเดอร์}
+    const skillPath = path.join(__dirname, '../public/images/skill', heroSkillFolder);
+    
+    if (fs.existsSync(skillPath)) {
+        // อ่านไฟล์รูปทั้งหมดในโฟลเดอร์ skill นั้น
+        return fs.readdirSync(skillPath)
+            .filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file))
+            .sort(); // เรียงชื่อไฟล์ (1.png, 2.png, ...)
+    }
+    return [];
+};
+
 module.exports = {
     getGradeAndName,
     getSortedImages,
-    getImageFiles
+    getImageFiles,
+    formatHeroName,
+    getFilesFromDir,
+    getSkillImages
 };
