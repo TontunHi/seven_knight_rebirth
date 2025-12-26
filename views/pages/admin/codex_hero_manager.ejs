@@ -1,243 +1,588 @@
-<%- include('../../partials/head') %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../../partials/head') %>
+    <style>
+        /* --- Global & Layout (Theme from Build Manager) --- */
+        body { color: #e0e0e0; }
+        .text-muted { color: #adadad !important; } /* สีเทาอ่อน */
+        .text-secondary { color: #cccccc !important; } /* สีเทาขาว */
+        .sidebar-header { border-bottom: 1px solid #444; }
+        .group-item { color: #bbbbbb; } /* สีกลุ่ม */
+        
+        /* Layout Calculation: Navbar Height = 64px */
+        .codex-layout { 
+            display: flex;
+            height: 100vh; 
+            padding-top: 64px; 
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
 
-<style>
-    body {
-        background-color: #121212; /* พื้นหลังเว็บสีมืดสนิท */
-    }
-    .codex-container {
-        max-width: 1200px; /* จำกัดความกว้างไม่ให้เกินนี้ */
-    }
-    .main-card {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-    .hero-card {
-        background-color: #2c2c2c;
-        border: 1px solid #444;
-        transition: transform 0.2s, border-color 0.2s;
-    }
-    .hero-card:hover {
-        transform: translateY(-5px);
-        border-color: #ffc107; /* สีเหลือง */
-    }
-    .skill-icon {
-        width: 32px;
-        height: 32px;
-        object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid #666;
-        background: #000;
-    }
-    /* Scrollbar สวยๆ ใน Modal */
-    .image-selector-container::-webkit-scrollbar {
-        width: 8px;
-    }
-    .image-selector-container::-webkit-scrollbar-thumb {
-        background: #555; 
-        border-radius: 4px;
-    }
-</style>
+        /* --- Navbar --- */
+        .navbar-modern {
+            height: 64px;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1050;
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-brand-text { font-weight: 700; letter-spacing: 0.5px; font-size: 1.1rem; color: #fff; }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05); color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 16px; border-radius: 20px; font-size: 0.85rem;
+            transition: all 0.2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
-<div class="container codex-container mt-5 pb-5">
+        /* --- Left Sidebar (Groups) --- */
+        .sidebar-panel { 
+            width: 280px;
+            background: #161616; 
+            border-right: 1px solid #333; 
+            display: flex; flex-direction: column; flex-shrink: 0;
+        }
+        .sidebar-header { 
+            padding: 15px; border-bottom: 1px solid #2a2a2a; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .group-list { overflow-y: auto; flex: 1; padding: 10px; }
+        
+        .group-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; margin-bottom: 4px;
+            cursor: pointer; border-radius: 6px; transition: all 0.2s; 
+            color: #aaa; text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .group-item:hover { background: #252525; color: #fff; padding-left: 20px; }
+        .group-item.active { 
+            background: #222; 
+            color: #ffc107; 
+            border-left-color: #ffc107;
+            font-weight: 600;
+        }
+
+        /* --- Right Content (Heroes) --- */
+        .content-panel { 
+            flex: 1;
+            background: #121212; 
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Category Tabs (Top of Content) */
+        .top-tabs-bar {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            background: #181818;
+            display: flex; gap: 10px; align-items: center;
+            overflow-x: auto; flex-shrink: 0;
+        }
+        .cat-tab {
+            padding: 6px 18px; border-radius: 20px; 
+            background: #252525; border: 1px solid #333;
+            color: #888; text-decoration: none; font-size: 0.9rem;
+            white-space: nowrap; transition: 0.2s;
+        }
+        .cat-tab:hover { background: #333; color: #fff; }
+        .cat-tab.active {
+            background: rgba(255, 193, 7, 0.15); 
+            color: #ffc107; 
+            border-color: #ffc107;
+            font-weight: bold;
+        }
+        .btn-add-mini {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1px dashed #555; background: transparent; color: #555;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-add-mini:hover { border-color: #ffc107; color: #ffc107; }
+
+        /* Hero Grid Area */
+        .hero-grid-container {
+            flex: 1; overflow-y: auto; padding: 20px;
+        }
+        .hero-card {
+            background: #1e1e1e; border: 1px solid #333; border-radius: 8px;
+            transition: transform 0.2s; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 15px; height: 100%;
+            cursor: pointer;
+        }
+        .hero-card:hover { 
+            transform: translateY(-5px); 
+            border-color: #ffc107; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .hero-img {
+            width: 100%; aspect-ratio: 3/4; object-fit: contain;
+            border-radius: 4px; background: #121212; margin-bottom: 10px;
+        }
+        .hero-name { color: #fff; font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; text-align: center; }
+        
+        /* --- Skill Priority Styles --- */
+        .skill-grid {
+        display: flex; /* เปลี่ยนจาก Grid เป็น Flex เพื่อใช้ง่ายกับ direction */
+        flex-wrap: wrap;
+        flex-direction: row-reverse; /* เรียงจากขวามาซ้าย */
+        justify-content: flex-end; /* ชิดขวา */
+        gap: 15px;
+        padding: 10px;
+        }
+        .skill-priority-item {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            aspect-ratio: 1;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #000;
+        }
+        .skill-priority-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: grayscale(0.5);
+            transition: 0.2s;
+        }
+        .skill-priority-item:hover { border-color: #ffc107; }
+        .skill-priority-item:hover img { filter: grayscale(0); }
+        .skill-priority-item.selected {
+            border-color: #ffc107;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
+        }
+        .skill-priority-item.selected img { filter: grayscale(0); }
+        .priority-badge {
+            position: absolute;
+            top: 5px; right: 5px;
+            width: 28px; height: 28px;
+            background: #ffc107;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transform: scale(0);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .skill-priority-item.selected .priority-badge { transform: scale(1); }
+
+        /* --- Modal & Form Styles --- */
+        .modal-content { background-color: #1e1e1e; border: 1px solid #444; }
+        .form-control { background-color: #000; color: #fff; border-color: #444; }
+        .form-control:focus { background-color: #000; color: #fff; border-color: #ffc107; box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25); }
+        .text-warning { color: #ffc107 !important; }
+        .btn-warning { background-color: #ffc107; border-color: #ffc107; color: #000; font-weight: bold; }
+        
+        /* Image Selector in Add Hero Modal */
+        .selectable-image {
+            position: relative; border: 2px solid transparent; border-radius: 6px;
+            overflow: hidden; background: #121212; transition: all 0.2s; aspect-ratio: 3/4; cursor: pointer;
+        }
+        .selectable-image img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: 0.2s; }
+        .selectable-image:hover img { opacity: 1; }
+        .selectable-image.selected { border-color: #ffc107; }
+        .selectable-image.selected img { opacity: 1; }
+        .img-name-overlay {display: none !important;}
+        .search-wrapper { position: relative; }
+        .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; }
+        .search-wrapper input { padding-left: 35px; border-radius: 20px; background: #000; border: 1px solid #333; }
+    </style>
+</head>
+<body class="text-light">
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="text-warning fw-bold mb-0"><i class="fas fa-dungeon"></i> Hero Codex Manager</h2>
-            <p class="text-white-50 mb-0">Manage heroes, categories, and skill linkages.</p>
+    <nav class="navbar-modern">
+        <div class="d-flex align-items-center gap-3">
+            <img src="/images/about_website/logo_seven_knights_rebirth.png" alt="Logo" style="height: 40px;">
+            <span class="nav-brand-text">7K Rebirth <span style="font-weight:400; opacity:0.7;">| Codex Manager</span></span>
         </div>
-        <a href="/admin/dashboard" class="btn btn-outline-secondary text-white">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
-    </div>
-
-    <div class="card main-card mb-5">
-        <div class="card-body p-4">
-            <h5 class="text-white mb-3"><i class="fas fa-plus-circle text-success"></i> New Main Category</h5>
-            <form action="/admin/codex/category/add" method="POST" class="d-flex gap-2">
-                <input type="text" name="name" class="form-control bg-dark text-white border-secondary" placeholder="Enter Category Name (e.g. Special Heroes)" required>
-                <button type="submit" class="btn btn-success px-4 fw-bold">Add</button>
-            </form>
+        <div class="d-flex align-items-center gap-3">
+            <a href="/admin/dashboard" class="nav-btn"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/logout" class="nav-btn"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </div>
-    </div>
+    </nav>
 
-    <% categories.forEach(cat => { %>
-        <div class="mb-5">
-            <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-secondary">
-                <h3 class="text-white fw-bold m-0"><%= cat.name %></h3>
+    <div class="codex-layout">
+        
+        <div class="sidebar-panel">
+            <div class="sidebar-header">
+                <span class="fw-bold text-white"><i class="bi bi-collection me-2 text-warning"></i>Groups</span>
+                <button class="btn btn-sm btn-outline-secondary border-0 text-warning" data-bs-toggle="modal" data-bs-target="#addGroupModal" title="Add Group">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+            <div class="group-list">
+                <% if(groups && groups.length > 0) { %>
+                    <% groups.forEach(grp => { %>
+                        <a href="/admin/codex/hero?cat_id=<%= activeCatId %>&group_id=<%= grp.id %>" 
+                           class="group-item <%= activeGroupId == grp.id ? 'active' : '' %>">
+                           <span><%= grp.name %></span>
+                           <% if(activeGroupId == grp.id) { %> <i class="bi bi-chevron-right" style="font-size: 0.8rem;"></i> <% } %>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <div class="text-center mt-5 text-muted">
+                        <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
+                        <small>No groups found</small>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="content-panel">
+            
+            <div class="top-tabs-bar">
+                <span class="text-muted small fw-bold me-2 text-uppercase" style="letter-spacing: 1px;">Categories:</span>
+                <% if(categories && categories.length > 0) { %>
+                    <% categories.forEach(cat => { %>
+                        <a href="/admin/codex/hero?cat_id=<%= cat.id %>" 
+                           class="cat-tab <%= activeCatId == cat.id ? 'active' : '' %>">
+                           <%= cat.name %>
+                        </a>
+                    <% }) %>
+                <% } %>
+                <button type="button" class="btn-add-mini ms-2" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
             </div>
 
-            <div class="row g-4">
-                <% const myGroups = groups.filter(g => g.category_id === cat.id); %>
-                
-                <% myGroups.forEach(group => { %>
-                    <div class="col-12">
-                        <div class="card main-card">
-                            <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center py-3">
-                                <h5 class="text-info m-0 fw-bold"><i class="fas fa-layer-group"></i> <%= group.name %></h5>
-                                <button class="btn btn-sm btn-primary px-3 rounded-pill" 
-                                        onclick="openAddHeroModal('<%= group.id %>', '<%= group.name %>')">
-                                    <i class="fas fa-plus"></i> Add Hero
-                                </button>
-                            </div>
+            <div class="hero-grid-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <% const currentGroup = groups.find(g => g.id == activeGroupId); %>
+                        <h3 class="m-0 text-white fw-bold"><%= currentGroup ? currentGroup.name : 'Select a Group' %></h3>
+                        <small class="text-muted">Click on a hero to manage skill priority</small>
+                    </div>
+                    <% if(activeGroupId) { %>
+                        <button class="btn btn-warning px-4 rounded-pill shadow-sm" onclick="openAddHeroModal('<%= activeGroupId %>', '<%= currentGroup ? currentGroup.name : '' %>')">
+                            <i class="bi bi-plus-lg me-1"></i> Add Hero
+                        </button>
+                    <% } %>
+                </div>
 
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <% const myHeroes = heroes.filter(h => h.group_id === group.id); %>
-                                    
-                                    <% if(myHeroes.length === 0) { %>
-                                        <div class="col-12 text-center py-4">
-                                            <span class="text-muted fst-italic">No heroes in this group.</span>
-                                        </div>
-                                    <% } %>
-
-                                    <% myHeroes.forEach(hero => { %>
-                                        <div class="col-6 col-md-4 col-lg-2">
-                                            <div class="card hero-card h-100 text-center p-2">
-                                                <div class="mb-2">
-                                                    <img src="/images/heroes/<%= hero.image_name %>" class="img-fluid rounded" style="max-height: 90px; object-fit: contain;">
-                                                </div>
-                                                
-                                                <h6 class="text-white fw-bold mb-1 text-truncate"><%= hero.name %></h6>
-
-                                                <div class="d-flex flex-row-reverse justify-content-center gap-1 my-2 flex-wrap">
-                                                    <% if (hero.skillImages && hero.skillImages.length > 0) { %>
-                                                        <% hero.skillImages.forEach(skillImg => { %>
-                                                            <img src="/images/skill/<%= hero.detectedSkillFolder %>/<%= skillImg %>" 
-                                                                 class="skill-icon" 
-                                                                 title="<%= skillImg %>"
-                                                                 loading="lazy">
-                                                        <% }) %>
-                                                    <% } else { %>
-                                                        <small class="text-danger" style="font-size: 0.7rem;">No Skills Found</small>
-                                                    <% } %>
-                                                </div>
-                                                
-                                                <a href="/admin/codex/hero/delete/<%= hero.id %>" 
-                                                   class="btn btn-danger btn-sm w-100 py-0 mt-auto" 
-                                                   onclick="return confirm('Delete this hero?')">
-                                                    <small>Remove</small>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    <% }); %>
-                                </div>
+                <div class="row g-3">
+                    <% if(heroes.length === 0) { %>
+                        <div class="col-12">
+                            <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted" style="border: 2px dashed #333; border-radius: 10px;">
+                                <i class="bi bi-people display-4 mb-3 opacity-25"></i>
+                                <h5>No heroes in this group</h5>
+                                <% if(!activeGroupId) { %><p class="small">Please select a group from the sidebar</p><% } %>
                             </div>
                         </div>
-                    </div>
-                <% }); %>
+                    <% } %>
 
-                <div class="col-md-4">
-                    <div class="card bg-transparent border-secondary border-dashed h-100" style="border-style: dashed;">
-                        <div class="card-body d-flex align-items-center justify-content-center">
-                            <form action="/admin/codex/group/add" method="POST" class="w-100">
-                                <input type="hidden" name="category_id" value="<%= cat.id %>">
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="name" class="form-control bg-dark text-white border-secondary" placeholder="New Sub-Group..." required>
-                                    <button type="submit" class="btn btn-secondary"><i class="fas fa-plus"></i></button>
+                    <% heroes.forEach(hero => { %>
+                        <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                            <div class="hero-card" 
+                                 onclick="openSkillManager(
+                                    '<%= hero.id %>', 
+                                    '<%= hero.name %>', 
+                                    '<%= hero.detectedSkillFolder %>', 
+                                    <%= JSON.stringify(hero.skillImages) %>,
+                                    <%= JSON.stringify(hero.skillOrder || []) %>
+                                 )">
+                                <img src="/images/heroes/<%= hero.image_name %>" class="hero-img">
+                                <div class="hero-name"><%= hero.name %></div>
+                                
+                                <div class="text-center mb-3">
+                                    <span class="badge bg-dark border border-secondary text-secondary rounded-pill" style="font-weight:normal; font-size: 0.7rem;">
+                                        <i class="bi bi-lightning-fill text-warning"></i> Manage Skills
+                                    </span>
                                 </div>
-                            </form>
+
+                                <a href="/admin/codex/hero/delete/<%= hero.id %>?cat_id=<%= activeCatId %>&group_id=<%= activeGroupId %>" 
+                                   class="btn btn-outline-danger btn-sm w-100 mt-auto"
+                                   onclick="event.stopPropagation(); return confirm('Delete <%= hero.name %>?')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    <% }) %>
                 </div>
             </div>
-            
         </div>
-    <% }); %>
-</div>
+    </div>
 
-<div class="modal fade" id="addHeroModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Add Hero to <span id="modalGroupName" class="text-info fw-bold"></span></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white">Add Main Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/codex/category/add" method="POST">
+                    <div class="modal-body">
+                        <label class="form-label text-muted small fw-bold">CATEGORY NAME</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Special Heroes" required>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-warning px-4">Save</button>
+                    </div>
+                </form>
             </div>
-            <form action="/admin/codex/hero/add" method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="group_id" id="modalGroupId">
-                    
-                    <div class="mb-3">
-                        <label class="form-label text-warning">Select Hero Image</label>
-                        <input type="text" id="imgSearch" class="form-control bg-black text-white border-secondary mb-2" placeholder="Search filename..." onkeyup="filterImages()">
-                        
-                        <div class="border border-secondary rounded p-2 bg-black image-selector-container" style="max-height: 300px; overflow-y: auto;">
-                            <div class="row g-2" id="imageGrid">
-                                <% availableHeroImages.forEach(img => { %>
-                                    <div class="col-3 col-sm-2 text-center img-item-col">
-                                        <div class="p-1 border border-transparent rounded selectable-image" 
-                                             style="cursor: pointer;" 
-                                             onclick="selectImage(this, '<%= img %>')">
-                                            <img src="/images/heroes/<%= img %>" class="img-fluid mb-1" style="max-height: 60px;">
-                                            <small class="d-block text-muted text-truncate" style="font-size: 0.7rem;"><%= img %></small>
-                                        </div>
-                                    </div>
-                                <% }) %>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addGroupModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white">Add Group to <span class="text-warning"><%= categories.find(c => c.id == activeCatId)?.name %></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/codex/group/add" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="category_id" value="<%= activeCatId %>">
+                        <label class="form-label text-muted small fw-bold">GROUP NAME</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Seven Knights" required>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-warning px-4">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addHeroModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white">Add Hero to <span id="modalGroupName" class="text-warning fw-bold"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/codex/hero/add" method="POST">
+                    <div class="modal-body row g-4">
+                        <div class="col-lg-4 border-end border-secondary">
+                            <input type="hidden" name="group_id" id="modalGroupId">
+                            <input type="hidden" name="return_cat_id" value="<%= activeCatId %>">
+
+                            <div class="mb-4 text-center">
+                                <div id="previewSelected" class="d-flex align-items-center justify-content-center text-muted border border-secondary rounded bg-black mx-auto" 
+                                     style="width: 140px; aspect-ratio: 3/4; overflow: hidden;">
+                                    <small>No Image</small>
+                                </div>
+                                <div class="mt-2 text-warning fw-bold small" id="previewName">Select an image</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">SELECTED IMAGE FILE</label>
+                                <input type="text" name="image_name" id="selectedImageInput" class="form-control form-control-sm text-warning fw-bold" readonly required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">SKILL FOLDER</label>
+                                <input type="text" name="skill_folder" id="skillFolderInput" class="form-control form-control-sm" placeholder="Auto-fill...">
+                                <small class="text-muted" style="font-size: 0.7rem;">Folder in <code>public/images/skill/</code></small>
                             </div>
                         </div>
-                        <input type="hidden" name="image_name" id="selectedImageInput" required>
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-warning">Skill Folder Name</label>
-                        <input type="text" name="skill_folder" id="skillFolderInput" class="form-control bg-black text-white border-secondary" placeholder="Auto-filled from image name">
-                        <small class="text-muted">System will look in <code>public/images/skill/[folder_name]</code></small>
+                        <div class="col-lg-8">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="text-white fw-bold">Select Hero Image</label>
+                                <div class="search-wrapper" style="width: 200px;">
+                                    <i class="bi bi-search"></i>
+                                    <input type="text" id="imgSearch" class="form-control form-control-sm text-white" placeholder="Search..." onkeyup="filterImages()">
+                                </div>
+                            </div>
+                            
+                            <div class="image-selector-container pe-2" style="max-height: 400px; overflow-y: auto;">
+                                <div class="row g-2" id="imageGrid">
+                                    <% availableHeroImages.forEach(img => { %>
+                                         <div class="col-3 col-sm-3 col-md-2 img-item-col">
+                                            <div class="selectable-image" onclick="selectImage(this, '<%= img %>')">
+                                                <img src="/images/heroes/<%= img %>" loading="lazy">
+                                                <div class="img-name-overlay"><%= img %></div>
+                                            </div>
+                                       </div>
+                                    <% }) %>
+                                </div>
+                             </div>
+                        </div>
                     </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning px-5 fw-bold">Save Hero</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <div class="modal fade" id="skillManagerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-secondary">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="modal-title text-white">Skill Priority: <span id="skillHeroName" class="text-warning"></span></h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Click skills in the order you want them to be used (1, 2, 3...). Click again to unselect.
+                    </p>
+                    
+                    <div id="skillGridContainer" class="skill-grid">
+                        </div>
+
+                    <div id="noSkillsMsg" class="text-center py-5 text-muted d-none">
+                        <i class="bi bi-exclamation-triangle display-4 mb-2"></i>
+                        <p>No skills found in folder.</p>
+                    </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success px-4">Save Hero</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success px-4 fw-bold" onclick="saveSkillPriority()">
+                        <i class="bi bi-save me-1"></i> Save Priority
+                    </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    function openAddHeroModal(groupId, groupName) {
-        document.getElementById('modalGroupId').value = groupId;
-        document.getElementById('modalGroupName').innerText = groupName;
-        // Reset inputs
-        document.getElementById('selectedImageInput').value = '';
-        document.getElementById('skillFolderInput').value = '';
-        // Clear selection visual
-        document.querySelectorAll('.selectable-image').forEach(el => {
-            el.classList.remove('bg-primary', 'bg-opacity-25', 'border-primary');
-            el.classList.add('border-transparent');
-        });
-        
-        new bootstrap.Modal(document.getElementById('addHeroModal')).show();
-    }
+    <%- include('../../partials/footer') %>
 
-    function selectImage(el, filename) {
-        // Clear previous selection
-        document.querySelectorAll('.selectable-image').forEach(div => {
-            div.classList.remove('bg-primary', 'bg-opacity-25', 'border-primary');
-            div.classList.add('border-transparent');
-        });
-        
-        // Highlight current
-        el.classList.remove('border-transparent');
-        el.classList.add('bg-primary', 'bg-opacity-25', 'border-primary');
-
-        // Set Values
-        document.getElementById('selectedImageInput').value = filename;
-        
-        // Auto-fill skill folder (remove extension)
-        const folderName = filename.replace(/\.[^/.]+$/, "");
-        document.getElementById('skillFolderInput').value = folderName;
-    }
-
-    function filterImages() {
-        const input = document.getElementById('imgSearch').value.toLowerCase();
-        const cols = document.getElementsByClassName('img-item-col');
-        
-        for (let col of cols) {
-            const txt = col.innerText || col.textContent;
-            col.style.display = txt.toLowerCase().includes(input) ? "" : "none";
+    <script>
+        // --- Add Hero & General Functions ---
+        function openAddHeroModal(groupId, groupName) {
+            document.getElementById('modalGroupId').value = groupId;
+            document.getElementById('modalGroupName').innerText = groupName;
+            document.getElementById('selectedImageInput').value = '';
+            document.getElementById('skillFolderInput').value = '';
+            document.getElementById('previewSelected').innerHTML = '<small>No Image</small>';
+            document.getElementById('previewName').innerText = 'Select an image';
+            document.querySelectorAll('.selectable-image').forEach(el => el.classList.remove('selected'));
+            new bootstrap.Modal(document.getElementById('addHeroModal')).show();
         }
-    }
-</script>
 
-<%- include('../../partials/footer') %>
+        function selectImage(el, filename) {
+            document.querySelectorAll('.selectable-image').forEach(div => div.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('selectedImageInput').value = filename;
+            const folderName = filename.replace(/\.[^/.]+$/, "");
+            document.getElementById('skillFolderInput').value = folderName;
+            document.getElementById('previewSelected').innerHTML = `<img src="/images/heroes/${filename}" style="width:100%; height:100%; object-fit:cover;">`;
+            document.getElementById('previewName').innerText = filename;
+        }
+
+        function filterImages() {
+            const input = document.getElementById('imgSearch').value.toLowerCase();
+            const cols = document.getElementsByClassName('img-item-col');
+            for (let col of cols) {
+                const txt = col.innerText || col.textContent;
+                col.style.display = txt.toLowerCase().includes(input) ? "" : "none";
+            }
+        }
+
+        // --- Skill Priority Manager Functions ---
+        let currentHeroId = null;
+        let currentSkillFolder = '';
+        let currentPriorityList = [];
+
+        function openSkillManager(id, name, folder, allSkills, savedOrder) {
+            currentHeroId = id;
+            currentSkillFolder = folder;
+            document.getElementById('skillHeroName').innerText = name;
+            
+            // ใช้ savedOrder เป็นฐาน แต่ต้องกรองว่าไฟล์ยังมีอยู่จริงใน allSkills
+            currentPriorityList = savedOrder.filter(s => allSkills.includes(s));
+            
+            const grid = document.getElementById('skillGridContainer');
+            const noMsg = document.getElementById('noSkillsMsg');
+            grid.innerHTML = '';
+
+            if(!allSkills || allSkills.length === 0) {
+                noMsg.classList.remove('d-none');
+            } else {
+                noMsg.classList.add('d-none');
+                allSkills.forEach(filename => {
+                    const div = document.createElement('div');
+                    div.className = 'skill-priority-item';
+                    div.dataset.file = filename;
+                    div.onclick = () => toggleSkillPriority(filename);
+                    div.innerHTML = `
+                        <img src="/images/skill/${folder}/${filename}" draggable="false">
+                        <div class="priority-badge"></div>
+                    `;
+                    grid.appendChild(div);
+                });
+                updateSkillVisuals();
+            }
+
+            new bootstrap.Modal(document.getElementById('skillManagerModal')).show();
+        }
+
+        function toggleSkillPriority(filename) {
+            const index = currentPriorityList.indexOf(filename);
+            if (index > -1) {
+                currentPriorityList.splice(index, 1);
+            } else {
+                currentPriorityList.push(filename);
+            }
+            updateSkillVisuals();
+        }
+
+        function updateSkillVisuals() {
+            const items = document.querySelectorAll('.skill-priority-item');
+            items.forEach(item => {
+                const file = item.dataset.file;
+                const idx = currentPriorityList.indexOf(file);
+                if (idx > -1) {
+                    item.classList.add('selected');
+                    item.querySelector('.priority-badge').innerText = idx + 1;
+                } else {
+                    item.classList.remove('selected');
+                    item.querySelector('.priority-badge').innerText = '';
+                }
+            });
+        }
+
+        function saveSkillPriority() {
+            if(!currentHeroId) return;
+            const btn = document.querySelector('#skillManagerModal .btn-success');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            btn.disabled = true;
+
+            fetch('/admin/api/codex/save_skill_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hero_id: currentHeroId,
+                    skill_order: currentPriorityList
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.reload(); 
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Connection error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

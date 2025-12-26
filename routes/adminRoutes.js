@@ -22,42 +22,46 @@ router.get('/login', adminController.getLoginPage);
 router.post('/login', adminController.postLogin);
 router.get('/logout', adminController.logout);
 
-// Dashboard (Panel)
+// Dashboard
 router.get('/dashboard', requireAdmin, adminController.getDashboard);
 
-// Manage Tier List
+// Tier List
 router.get('/manage/tierlist', requireAdmin, adminController.getTierListManager);
 router.post('/api/save_tier', requireAdmin, adminController.saveTierList);
 
-// --- Build Manager Routes ---
-// Grade: 'legendary' หรือ 'rare'
+// Build Manager
 router.get('/manage/build/:grade', requireAdmin, adminController.getBuildManager);
-
-// API สำหรับบันทึกและลบ Build
 router.post('/api/save_build', requireAdmin, adminController.saveBuild);
 router.post('/api/delete_build', requireAdmin, adminController.deleteBuild);
 
-// เพิ่ม Route ใหม่
+// Comp & Guide
 router.get('/manage/comp/stage', requireAdmin, adminController.getStageCompManager);
 router.post('/api/save_stage_comp', requireAdmin, adminController.saveStageComp);
 router.post('/api/delete_stage_comp', requireAdmin, adminController.deleteStageComp);
 
-//Dungeon
 router.get('/manage/comp/dungeon', requireAdmin, adminController.getDungeonManager);
 router.post('/api/save_dungeon_comp', requireAdmin, adminController.saveDungeonComp);
 router.post('/api/delete_dungeon_comp', requireAdmin, adminController.deleteDungeonComp);
 
-//Guild War
 router.get('/manage/comp/guild-war', requireAdmin, adminController.getGuildWarManager);
 router.post('/api/save_guildwar_comp', requireAdmin, adminController.saveGuildWarComp);
 router.post('/api/delete_guildwar_comp', requireAdmin, adminController.deleteGuildWarComp);
 
-//Codex Routes ---
+// --- CODEX ROUTES ---
+
+// Hero Codex
 router.get('/codex/hero', adminCodexController.getIndex);
-// Action ต่างๆ (Add Category, Add Group, Add Hero, Delete)
-router.post('/codex/category/add', adminCodexController.addCategory);
-router.post('/codex/group/add', adminCodexController.addGroup);
 router.post('/codex/hero/add', adminCodexController.addHero);
 router.get('/codex/hero/delete/:id', adminCodexController.deleteHero);
+router.post('/api/codex/save_skill_order', adminCodexController.saveSkillOrder);
+
+// Pet Codex
+router.get('/codex/pet', adminCodexController.getPetIndex);
+router.post('/codex/pet/add', adminCodexController.addPet);
+router.get('/codex/pet/delete/:id', adminCodexController.deletePet);
+
+// Shared Actions (Add Category / Group)
+router.post('/codex/category/add', adminCodexController.addCategory);
+router.post('/codex/group/add', adminCodexController.addGroup);
 
 module.exports = router;

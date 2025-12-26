@@ -93,16 +93,26 @@ db.serialize(() => {
         FOREIGN KEY(category_id) REFERENCES codex_categories(id)
     )`);
 
-    // 3. ตาราง Hero (เก็บชื่อ, รูป, และชื่อโฟลเดอร์สกิล)
+    // ตาราง Hero
     db.run(`CREATE TABLE IF NOT EXISTS codex_heroes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         group_id INTEGER,
-        name TEXT,           -- ชื่อที่แสดงผล (Clean Name)
-        image_name TEXT,     -- ชื่อไฟล์รูปปก (l++_colt.png)
-        skill_folder TEXT,   -- ชื่อโฟลเดอร์สกิล (l+colt)
+        name TEXT,
+        image_name TEXT,
+        skill_folder TEXT,
+        skill_order TEXT,   -- [NEW] เก็บ JSON Array ลำดับสกิล เช่น ["skill1.png", "skill2.png"]
+        FOREIGN KEY(group_id) REFERENCES codex_groups(id)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS codex_pets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER,
+        name TEXT,
+        image_name TEXT,
         FOREIGN KEY(group_id) REFERENCES codex_groups(id)
     )`);
 });
+
+    
 }
 
 module.exports = db;
